@@ -1,0 +1,14 @@
+{
+  "name": "pindoupic",
+  "description": "把图片变成能照着拼的拼豆图纸：本地出图、带色号与材料清单，Claude Code / Cursor / Codex / Qoder 等助手可直接调用。",
+  "owner": {
+    "name": "qxshn"
+  },
+  "plugins": [
+    {
+      "name": "pindoupic-bead-pattern",
+      "source": "./",
+      "description": "图片转拼豆图纸，本地出图不上传。Perler bead pattern from any image, offline."
+    }
+  ]
+}

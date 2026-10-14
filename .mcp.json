@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "pindoupic": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "-p",
+        "@javascribe/pindoupic@latest",
+        "pindoupic-mcp"
+      ]
+    }
+  }
+}

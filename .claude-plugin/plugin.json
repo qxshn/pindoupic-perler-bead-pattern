@@ -1,0 +1,22 @@
+{
+  "name": "pindoupic-bead-pattern",
+  "displayName": "Pindoupic 拼豆图纸",
+  "version": "0.8.0",
+  "description": "图片转拼豆图纸，本地出图不上传。Perler bead pattern from any image, offline.",
+  "author": {
+    "name": "qxshn",
+    "url": "https://github.com/qxshn"
+  },
+  "homepage": "https://www.pindoupic.com/agent-tools?ref=mcp-registry",
+  "repository": "https://github.com/qxshn/pindoupic-bead-pattern",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "perler-beads",
+    "hama-beads",
+    "bead-pattern",
+    "拼豆",
+    "拼豆图纸",
+    "pixel-art",
+    "mcp"
+  ]
+}
