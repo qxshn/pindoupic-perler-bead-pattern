@@ -29,8 +29,9 @@
 - 入口：<https://github.com/cline/mcp-marketplace/issues/new?template=mcp-server-submission.yml>
 - `repo-url` = https://github.com/qxshn/pindoupic-perler-bead-pattern
 - `logo` = 本仓 `./assets/logo-400x400.png`（400×400 PNG，由主仓母图 `./backend/static/logo-icon-color-512.png` 现缩；提交时按目录要求给可访问的 raw 链接）
-- 两条 checkbox 的凭据：README.md **或** 本仓 `llms-install.md` 单独读一遍就能装成功——这条必须**真跑过**再勾，
-  实跑读数见主仓 `prd/assets/10-15-discovery-materials/report-clean-room-install.txt`。
+- 两条 checkbox 的凭据：README.md **或** 本仓 `llms-install.md` 单独读一遍就能装成功——这条必须**真跑过**再勾。
+  可复跑的实跑器在主仓：`node scripts/verify-agent-cleanroom-install-1015.cjs`（假 HOME＋仓外临时目录，命令从这两份文件里现抽再执行，收尾断两个仓没被弄脏）。
+  它的读数文件**按仓库规矩不进版本库**（prd/ 证据只留本地副本），所以别在这份物料里找一个现成的读数文件——要凭据就现跑。
 - "服务器 stable" 这条由你判断。本文件**不写版本号**：线上 latest 与本地 `cli/package.json` 的现值不是一回事
   （本地改了版本而按裁定未发包，那种时候把数字抄进这份物料就是说谎），投递前用 `npm view @javascribe/pindoupic version` 现读一次。
 
