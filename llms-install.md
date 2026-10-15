@@ -43,8 +43,12 @@ The server exposes 10 tools: analyze_input, diff_pattern_grids, edit_pattern_gri
 ## Option 3 — skill only, straight from this repository
 
 ```bash
-npx skills add qxshn/pindoupic-perler-bead-pattern
+npx skills add qxshn/pindoupic-perler-bead-pattern --agent '*' -y
 ```
+
+The `--agent '*' -y` flags are **not optional for a machine**: without them the installer waits for an
+interactive selection, gets no TTY, installs nothing and exits 1 (measured verbatim:
+`Interactive prompt required but stdin is not a TTY. Nothing was installed.`).
 
 ## Option 4 — Claude Code plugin
 

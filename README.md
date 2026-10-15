@@ -24,8 +24,12 @@
 ## 装成技能包（skills.sh）
 
 ```bash
-npx skills add qxshn/pindoupic-perler-bead-pattern
+npx skills add qxshn/pindoupic-perler-bead-pattern --agent '*' -y
 ```
+
+`--agent '*' -y` 是给**非交互环境**（AI 助手、CI、脚本）用的：少了这两个旗标，这条命令会等键盘选宿主，
+选不了就**什么都不装并退 1**（实测原文：`Interactive prompt required but stdin is not a TTY. Nothing was installed.`）。
+人在终端里可以只跑 `npx skills add qxshn/pindoupic-perler-bead-pattern`，它会交互式问你要装到哪几家。
 
 装完技能落进各宿主的技能目录（Claude Code `.claude/skills/`、Codex/Cline `.agents/skills/`、
 Qoder `.qoder/skills/`），下次你说「拼豆图纸」它自己就用这套流程。
