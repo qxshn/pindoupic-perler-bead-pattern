@@ -24,20 +24,20 @@
 ## 装成技能包（skills.sh）
 
 ```bash
-npx skills add qxshn/pindoupic-bead-pattern
+npx skills add qxshn/pindoupic-perler-bead-pattern
 ```
 
 装完技能落进各宿主的技能目录（Claude Code `.claude/skills/`、Codex/Cline `.agents/skills/`、
 Qoder `.qoder/skills/`），下次你说「拼豆图纸」它自己就用这套流程。
 
-[![Install with skills.sh](https://skills.sh/b/qxshn/pindoupic-bead-pattern.svg)](https://skills.sh/qxshn/pindoupic-bead-pattern)
+[![Install with skills.sh](https://skills.sh/b/qxshn/pindoupic-perler-bead-pattern.svg)](https://skills.sh/qxshn/pindoupic-perler-bead-pattern)
 
 ## 装成 Claude 插件（本地 stdio MCP）
 
 在 Claude Code 里：
 
 ```
-/plugin marketplace add qxshn/pindoupic-bead-pattern
+/plugin marketplace add qxshn/pindoupic-perler-bead-pattern
 /plugin install pindoupic-bead-pattern@pindoupic
 ```
 
