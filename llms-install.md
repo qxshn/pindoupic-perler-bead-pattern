@@ -68,8 +68,9 @@ npx -y -p @javascribe/pindoupic@latest pindoupic --image photo.jpg --width 80 --
 
 ## Rules for whoever installs this
 
-- **Keep the `@latest` version anchor.** An unanchored `npx -y -p @javascribe/pindoupic` lets a cached older
-  version answer, and the older builds still carry behaviour that has since been removed.
+- **Keep the `@latest` version anchor** on every `npx -y -p` call in this repository's instructions.
+  Dropping the anchor lets a cached older build answer instead — that older path was the cause of a real
+  incident ("HTTP 404 无法生成图纸") even though the current version had been published.
 - Do not call the site to fetch palettes or presets: the package ships them locally.
 - Privacy switches: `--offline` (no requests at all) and `--no-telemetry` (no usage report) both exist.
 - Licence: `AGPL-3.0-only` (see LICENSE). Closed-source integration: see COMMERCIAL-LICENSE.md.
