@@ -26,7 +26,7 @@
 | 图片来源：URL | `--image-url` | `image_url` | 三入口选一 | 一致（09-29 补齐 CLI）；**只在本机下载**，图片不上传 |
 | 图片来源：base64 | `--image-base64` | `image_base64` | 三入口选一 | 一致（09-29 补齐 CLI）；带不带 `data:image/...;base64,` 前缀都行 |
 | 三入口优先级 | 路径 > URL > base64 | 同左 | — | 一致（同一份实现，字段优先级写在 `imageSource.ts`） |
-| 图纸宽度（格数） | `--width` / `-w` | `width` | 站点下发 `default_width`（离线兜底 80），区间 10-500 | 一致（09-29 起 CLI 也读下发值；10-14 起 npm 的上限等于算法层那根，不再自设 200） |
+| 图纸宽度（格数） | `--width` / `-w` | `width` | 站点下发 `default_width`（离线兜底 70＝线上同一格，10-15 全端统一），区间 10-500 | 一致（09-29 起 CLI 也读下发值；10-14 起 npm 的上限等于算法层那根，不再自设 200） |
 | 色板 | `--palette 品牌/型号` | `palette_brand` + `palette_sub`，**或** `palette: "品牌/型号"` | `MARD/291` | 一致（09-29 起 MCP 两种写法都吃；`palette` 与 CLI 同形，给了它就覆盖两段式。只写品牌不写型号会回一条 warnings 并按默认型号补齐——实测 `palette:"MARD/24"` 与 `palette_brand:MARD,palette_sub:24` 产物逐字节相同） |
 | 图片类型预设 | `--type` / `-t` | `image_type` | **都不套预设**（与 CLI 一致，09-28 修） | 一致 |
 | 镜像翻转 | `--mirror` | `mirror` | 关 | 一致 |
@@ -128,7 +128,7 @@
 
 | 能力 | CLI | MCP | 默认值 | 差异 |
 |---|---|---|---|---|
-| 出图前诊断 | `analyze <图>` / `--image` | `analyze_input` 的 `image_path` / `image_url` / `image_base64` | 按 `width`（默认 80）探针采样 | 一致（同一份 `cli/src/core/analyze.ts`）；四组读数逐字段全等 |
+| 出图前诊断 | `analyze <图>` / `--image` | `analyze_input` 的 `image_path` / `image_url` / `image_base64` | 按 `width`（默认 70）探针采样 | 一致（同一份 `cli/src/core/analyze.ts`）；四组读数逐字段全等 |
 | 诊断的格数与色板 | `--width` `--palette` | `width` `palette` | 同上 | 一致 |
 | 报告出口 | `--report <path>` 或 `report p.json` | `generate_bead_pattern` 的 `export_report_path`；单独出报告用 `report_pattern` | 不传＝不写 | 一致（同一份 `reportFile.ts`）。**必须有源图**：CLI 的 `--image`、MCP 的 `image_path`，缺了就拒绝而不是拿网格自己当参照 |
 | 报告核对（旧报告配新网格） | `report p.json --check report.json` | —（CLI 专属：这是回归/实验用的核对通道） | — | MCP 没有对应入参；需要核对时走 CLI |
