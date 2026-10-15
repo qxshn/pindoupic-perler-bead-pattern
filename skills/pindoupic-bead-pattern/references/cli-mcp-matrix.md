@@ -26,7 +26,7 @@
 | 图片来源：URL | `--image-url` | `image_url` | 三入口选一 | 一致（09-29 补齐 CLI）；**只在本机下载**，图片不上传 |
 | 图片来源：base64 | `--image-base64` | `image_base64` | 三入口选一 | 一致（09-29 补齐 CLI）；带不带 `data:image/...;base64,` 前缀都行 |
 | 三入口优先级 | 路径 > URL > base64 | 同左 | — | 一致（同一份实现，字段优先级写在 `imageSource.ts`） |
-| 图纸宽度（格数） | `--width` / `-w` | `width` | 站点下发 `default_width`（离线兜底 80），区间 10-200 | 一致（09-29 起 CLI 也读下发值） |
+| 图纸宽度（格数） | `--width` / `-w` | `width` | 站点下发 `default_width`（离线兜底 80），区间 10-500 | 一致（09-29 起 CLI 也读下发值；10-14 起 npm 的上限等于算法层那根，不再自设 200） |
 | 色板 | `--palette 品牌/型号` | `palette_brand` + `palette_sub`，**或** `palette: "品牌/型号"` | `MARD/291` | 一致（09-29 起 MCP 两种写法都吃；`palette` 与 CLI 同形，给了它就覆盖两段式。只写品牌不写型号会回一条 warnings 并按默认型号补齐——实测 `palette:"MARD/24"` 与 `palette_brand:MARD,palette_sub:24` 产物逐字节相同） |
 | 图片类型预设 | `--type` / `-t` | `image_type` | **都不套预设**（与 CLI 一致，09-28 修） | 一致 |
 | 镜像翻转 | `--mirror` | `mirror` | 关 | 一致 |
@@ -74,6 +74,9 @@
 |---|---|---|---|---|
 | 文字内容 | `--text <文字>` | `text` | 无默认（给了就进文字流） | 一致；**与三个图片入口互斥**，同时给会整次拒绝并点名（10-13 决-C＝乙） |
 | 字体 | `--font <key>` | `font` | `shuhei` | 一致。可选键与各自下限**从 `textFontLoader.ts` 的 `TEXT_FONTS` 现取**（两出口与 `--help` 三处同源，写死清单就是下一个漂移点）；`sys`（系统黑体）在 npm 出口不可用并点名原因 |
+| 自带字体文件 | `--font-file <path>` | `font_file` | 不给＝用内置那款 | 一致（同一份 `localFontFile()`）：给了它就走**零字体请求**那条路（不查内置表、不下载），文件解析不动就点名那份路径并整次拒绝，**绝不换成内置字体顶一张**；与 `--font`／`font` 同时给＝自带文件优先，但两出口都会点名被取代的那款内置字体（`advisories` 里那句「内置字体「seal」没有生效」）。字高下限按 16 格（内置轮廓档最宽松那档）——这是保守工程线，**不是对你这款字体的实测** |
+| 字体清单（纯查询） | `--list-fonts` | `list_fonts: true` | — | 一致（同一份 `listTextFonts()`）：key／名称／点阵还是轮廓／最低字高／篆书可写字数／本机有没有留档，**不出图、不发任何请求**（留档状态只 stat 本地目录），断网照样答；与 `--text`／三个图片入口混给会被拒（纯查询不猜意图） |
+| 预检（只跑判据不出图） | `--check-text` | `check_text: true` | — | 一致（**不是另写一份检查**，是同一条判据链跑完不渲染不落盘）：退出码 0／`success:true` 的语义是"这组参数能出图"，不是"图已经出了"；两出口都把出图那一发**会说的话**原样说一遍（同一个 `patternAdvisories`），并各说一句"预检模式没有写任何文件"。没给 text 单独给这一颗＝拒绝并指路，**不会**报成 "需要一张图片" |
 | 字高（格/字） | `--char-height <n>` | `char_height` | 24 | 一致。低于该字体下限会拒绝并说出下限；与网页 DEFAULT_UI 的 24 由 `check:npm-textflow` 的 D 族逐字对拍 |
 | 字距 | `--letter-gap <n>` | `letter_gap` | 7 | 一致 |
 | 行距 | `--line-gap <n>` | `line_gap` | 7 | 一致 |
@@ -84,8 +87,8 @@
 | 描边色号 | `--stroke-color <code>` | `stroke_color` | R1 | 一致 |
 | 云朵三色 | `--cloud-color a,b,c` | `cloud_color` | F14,E12,E6 | 一致（顺序＝内环/中环/外环，不是三个独立开关） |
 | 底色 | `--bg-color <code>` 或 `--bg-color none` | `bg_color` | `none`＝透明底 | 一致；传 none 与不给同形（整张铺底与文字块描边是两件事） |
-| 板宽 | `--width` / `-w` | `width` | 不给＝按文字块自动贴合 | **文字流与图片流是两个量**：文字流上限 200（`patternSize.ts` 的 `TEXT_BOARD_MAX_WIDTH`），图片流 500（10-13 决-E＝甲，正向钉住这条不等） |
-| 板高 | `--board-height <n>` | `board_height` | 不给＝自动贴合 | 一致（MCP 用 board_height 之名，免与图片流「高度按原图比例推导」混成一件事） |
+| 板宽 | `--width` / `-w` | `width` | 不给＝按文字块自动贴合 | **两个量，且 200 的身份变了**：文字流不再设人为上限（10-14 用户裁定「取消上限，只给建议」），`patternSize.ts` 的 `TEXT_BOARD_MAX_WIDTH=200` 现在只是**常见底板尺寸＝建议档**，拦人的是每边 1700 格那根防死机红线（实测档）；图片流仍是 500（算法层天花板） |
+| 板高 | `--board-height <n>` | `board_height` | 不给＝自动贴合 | 一致（MCP 用 board_height 之名，免与图片流「高度按原图比例推导」混成一件事）；上限口径同上一行（10-14 起不设人为格数上限，红线每边 1700） |
 | 锚点 | `--anchor <行,列>` | `grid_anchor` | 不给＝板内自动居中 | 一致；算式 `(W-bw)>>1` / `(H-bh)>>1` 与 iOS `pdGenerateText`、H5 `useTextPattern.ts` 同源 |
 
 实测依据（10-13，本机 `cli/dist`）：同一串文字参数分别从 CLI 与 MCP 喂进来，PNG **逐字节相同**、

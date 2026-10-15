@@ -3,7 +3,7 @@
 把任意图片变成能照着拼的拼豆图纸：带色号的格子图 + 各色用量 + 材料清单。
 **在你本机出图，图片不上传，断网也能用。**
 
-- 官网：<https://www.pindoupic.com>
+- 官网：<https://www.pindoupic.com/agent-tools?ref=mcp-registry>
 - npm 包：`@javascribe/pindoupic`
 - MCP 服务名（官方 Registry）：`io.github.qxshn/pindoupic-bead-pattern`
 
