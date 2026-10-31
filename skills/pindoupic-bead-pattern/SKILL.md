@@ -52,6 +52,12 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
   curl -sL "<url>" -o ./pp_input.png      # 用完后删除该文件
   ```
 - 用户只在对话里贴了 base64（宿主把图片编码给你了）→ CLI 用 `--image-base64 "<data>"`，MCP 用 `image_base64`；带不带 `data:image/png;base64,` 前缀都行。
+- 用户只给文字（"把『平安喜乐』做成拼豆图"这类）→ 不用找图，直接走下面的「第 1.5 步：文字转拼豆图纸」——
+  完整入口、九款字体清单、互斥开关与三条路的取舍都在那一步里。
+
+
+## 第 1.5 步：文字转拼豆图纸（用户只给文字时走这条）
+
 - 用户只给文字（"把『平安喜乐』做成拼豆图"这类）→ **三条路都给，让用户选**（10-30 用户裁定文字转图纸回到本包，覆盖 10-16 那批的撤下；那一批留下的"老写法整次拒绝＋转介网页版"行为已不存在）：
   1. **直接用本包的文字转图纸**（与网页同一份引擎）：CLI 给 `--text "平安喜乐"`，MCP 给 `text:"平安喜乐"`；
      字体 `--font`／`font` 可选 `fus12`／`fus8`（点阵像素风）与 `shuhei`／`pu85`／`huangyou`／`kuaile`／`noto400`／`wenkai`／`seal`（艺术字，
@@ -75,6 +81,8 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
   给了 `--font-file`／`font_file` 就**没有这一次联网**（文件在你本机）。图片流不受影响，断网照样出图。
   带着 `--offline`／`offline:true` 且本地还没留档 ⇒ 命令会**点名失败**（不会偷偷发那个请求，也不会换一款字体顶替）；
   这时要告诉用户"这款字体第一次用需要联网一次"，由用户决定，不要自己去掉 `--offline` 重试。
+- 一条可直接复制的完整例子：`pindoupic --text "平安喜乐" --font shuhei --char-height 24 --output ./pingan.png`
+  （MCP 形态：`text`＋`font`＋`char_height`＋`output_path`，旋钮同名 snake_case）。
 
 ## 第 2 步：选择参数
 
