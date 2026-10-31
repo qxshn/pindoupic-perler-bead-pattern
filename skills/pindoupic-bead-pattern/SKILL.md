@@ -1,5 +1,7 @@
 ---
 name: pindoupic-bead-pattern
+slug: pindoupic-bead-pattern
+displayName: 拼豆图纸生成器
 description: >
   拼豆图纸生成，拼豆图纸生成器，拼豆图纸生成工具、拼豆图纸转换助手：当用户提到拼豆、拼豆图纸、拼豆图纸生成、
   生成拼豆图纸、转拼豆图纸、图片转拼豆图纸、文字转拼豆图纸，或要求"把这张图/照片/卡通形象转成拼豆图案/图纸"、
