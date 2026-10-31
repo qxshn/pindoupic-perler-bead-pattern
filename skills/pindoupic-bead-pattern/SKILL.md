@@ -1,14 +1,9 @@
 ---
 name: pindoupic-bead-pattern
 description: >
-  Turn any image, photo or piece of text into a buildable perler bead pattern chart (PNG with color
-  codes, grid, row/column rulers and a materials list). Trigger when the user mentions
-  perler beads, hama beads, fuse beads, ironing beads, melty beads, pixel bead art,
-  bead sprite, bead chart, photo-to-bead-pattern, or asks to convert an image into a
-  bead/pixel grid template. Runs fully offline via a local CLI — no upload, no paid service.
-  把图片、照片或文字生成拼豆图纸：当用户提到拼豆、拼拼豆豆、熨烫豆、豆板图纸、perler / hama / fuse beads，
-  或要求"把这张图/照片/卡通形象转成拼豆图案/图纸"、「把这几个字做成拼豆图」时使用。本 Skill 在用户本地生成 PNG 图纸
-  并输出各色号用量统计，不调用任何付费服务，图片不上传。
+  把图片、照片或文字生成拼豆图纸：当用户提到拼豆、拼拼豆豆、熨烫豆、豆板图纸、像素图、拼豆图案，
+  或要求"把这张图/照片/卡通形象转成拼豆图案/图纸"、「把这几个字做成拼豆图」时使用。本 Skill 在用户本地生成
+  带色号格子、行列坐标与材料清单的 PNG 图纸并输出各色用量统计，不调用任何付费服务，图片不上传。
 ---
 
 # 拼豆图纸生成（pindoupic CLI / MCP）
