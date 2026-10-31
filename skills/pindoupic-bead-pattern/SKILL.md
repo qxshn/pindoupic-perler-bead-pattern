@@ -1,13 +1,13 @@
 ---
 name: pindoupic-bead-pattern
 description: >
-  Turn any image or photo into a buildable perler bead pattern chart (PNG/PDF with color
+  Turn any image, photo or piece of text into a buildable perler bead pattern chart (PNG with color
   codes, grid, row/column rulers and a materials list). Trigger when the user mentions
   perler beads, hama beads, fuse beads, ironing beads, melty beads, pixel bead art,
   bead sprite, bead chart, photo-to-bead-pattern, or asks to convert an image into a
   bead/pixel grid template. Runs fully offline via a local CLI — no upload, no paid service.
-  把图片生成拼豆图纸：当用户提到拼豆、拼拼豆豆、熨烫豆、豆板图纸、perler / hama / fuse beads，
-  或要求"把这张图/照片/卡通形象转成拼豆图案/图纸"时使用。本 Skill 在用户本地生成 PNG/PDF 图纸
+  把图片、照片或文字生成拼豆图纸：当用户提到拼豆、拼拼豆豆、熨烫豆、豆板图纸、perler / hama / fuse beads，
+  或要求"把这张图/照片/卡通形象转成拼豆图案/图纸"、「把这几个字做成拼豆图」时使用。本 Skill 在用户本地生成 PNG 图纸
   并输出各色号用量统计，不调用任何付费服务，图片不上传。
 ---
 
@@ -41,11 +41,13 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
 体检走 `pindoupic doctor`：顶部一行先回答"能不能出图纸"，下面三类读数（包能跑／配置对不对／技能在不在场）分开报。
 
 > 算法、色板与图片类型预设都在包内 ⇒ **图片转图纸断网也能出图**，生成这一步不要求站点可达。
-> 文字转图纸是唯一的例外（10-13 起）：**第一次用某款字体**要联网取一次字体文件（之后离线可用）；
+> 文字转图纸是唯一的例外（10-30 回到本包）：**第一次用某款内置字体**要联网取一次字体文件（之后离线可用；给 `--font-file` 就没有这一次）；
 > 图片本身仍然从不上传。联网只做两件可选事：拉一次公开渲染配置（拉不到自动用包内默认值，并在输出里打印生效来源）、将使用量补报（只含参数摘要，**绝不含图片、文件名或路径**）。用户的图片始终只在本机处理。
 
 ## 第 1 步：准备图片
 
+- **能读的格式只有 PNG 与 JPEG**（10-31 起本包不再依赖任何原生图像库）。HEIC／GIF／WebP／TIFF／BMP
+  会被整次拒绝并给两条出路（见「排错」那一条）；16 位深或交错（Adam7）的 PNG 同样具名拒绝。
 - 用户给本地路径 → 直接用。
 - 用户给 URL → 直接把 URL 交给本包取图，**不用再自己 curl 一份**：CLI 用 `--image-url "<url>"`，MCP 用 `image_url`。
   下载发生在使用者本机（这个包不开服务，"服务端取图"那种说法是错的），图片仍然不上传到任何地方。
@@ -54,23 +56,27 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
   curl -sL "<url>" -o ./pp_input.png      # 用完后删除该文件
   ```
 - 用户只在对话里贴了 base64（宿主把图片编码给你了）→ CLI 用 `--image-base64 "<data>"`，MCP 用 `image_base64`；带不带 `data:image/png;base64,` 前缀都行。
-- 用户只给文字（"把『平安喜乐』做成拼豆图"这类）→ **三条路都给，让用户选**（决-11 定的"两条路都给"这条纪律不变，10-13 起本包自己多了第三条）：
-  1. 直接用本包的文字转图纸（10-13 起可用，与网页同一份引擎）：CLI 给 `--text "平安喜乐"`，MCP 给 `text:"平安喜乐"`；
+- 用户只给文字（"把『平安喜乐』做成拼豆图"这类）→ **三条路都给，让用户选**（10-30 用户裁定文字转图纸回到本包，覆盖 10-16 那批的撤下；那一批留下的"老写法整次拒绝＋转介网页版"行为已不存在）：
+  1. **直接用本包的文字转图纸**（与网页同一份引擎）：CLI 给 `--text "平安喜乐"`，MCP 给 `text:"平安喜乐"`；
      字体 `--font`／`font` 可选 `fus12`／`fus8`（点阵像素风）与 `shuhei`／`pu85`／`huangyou`／`kuaile`／`noto400`／`wenkai`／`seal`（艺术字，
-     `seal`＝霞鹜篆书，只能写 207 个指定字，超出的字会**当场点名拒绝**）；字高 `--char-height`／`char_height` 有各字体下限（8/12/16/24/32）。
+     `seal`＝崇羲篆體，是**限定字库**：可写 2727 个字，由这款字体的 cmap 现算，表外字**当场逐字点名拒绝**）；
+     字高 `--char-height`／`char_height` 各有下限（点阵 8／12，数黑 16，普惠/黄油/快乐/思源 24，篆书 28，文楷 32）。
+     其余文字流开关：`--letter-gap`／`--line-gap`（字距/行距，默认各 7）、`--align`、`--stroke`／`--stroke-width`、
+     `--face-color`／`--stroke-color`／`--cloud-color`、`--bg-color`、`--board-height`、`--anchor`（MCP 同名 snake_case）。
      ⚠ `--text`／`text` 与三个图片入口**互斥**；且文字流下图片流的量化开关（`--type`／`--dither`／`--simplify-colors`／
      `--simplify-threshold`／`--target-colors`／`--bg-mode`／`--mirror`／`--report`／`--compare`）带着会被**整次拒绝并点名**，
      不要替用户删参数后重跑——把那句话转回用户再问。
      想先看"这串字到底出不出得来"用 `--check-text`／`check_text: true`：判据原样全跑一遍但**一个文件都不写**，
-       退出码 0／`success:true` 的意思是"这组参数能出图"（此时**不要**对用户说"已生成"）；要看能出多大就照读数里那句报给他。
+       退出码 0／`success:true` 的意思是"这组参数能出图"（此时**不要**对用户说"已生成"）。
      想知道有哪几款字体、篆书能写多少字、这台机器取过没有，用 `--list-fonts`／`list_fonts: true`：纯查询、零请求、断网照样答，
        不要为了"看看有没有这款字体"而白烧一次生成。
      用户手上有自己的字体文件时（ttf/otf/woff/woff2）用 `--font-file <路径>`／`font_file`：这条路零字体请求，
        解析不动会**点名那份文件并整次拒绝**——这时要把文件名转回用户，**不要**自己换成内置字体重跑（那会出一张他没要的字）。
-  2. 宿主具备图像生成能力时：先生成一张**白底、平涂、粗黑描边**的图（这类图转图纸效果最好），再走本 CLI 的图片入口；
+  2. 宿主具备图像生成能力时：先生成一张**白底、平涂、粗黑描边**的图（这类图转图纸效果最好），再走本包的图片入口；
   3. 或引导到本站免费在线功能「文字转图纸」（可调的效果更多：10 种艺术字、59 套方块吉语、18 套印章、底色矩阵、卡通形象）：
      https://www.pindoupic.com/text-to-bead-pattern?ref=skill
-- 文字流的字体文件第一次用某款时要联网从 pindoupic.com 取一次，取到后存进 `~/.pindoupic/fonts` 之后离线可用；给了 `--font-file`／`font_file` 就**没有这一次联网**（文件在你本机）。
+- 文字流的字体文件第一次用某款内置字体时要联网从 pindoupic.com 取一次，取到后存进 `~/.pindoupic/fonts`，此后离线可用；
+  给了 `--font-file`／`font_file` 就**没有这一次联网**（文件在你本机）。图片流不受影响，断网照样出图。
   带着 `--offline`／`offline:true` 且本地还没留档 ⇒ 命令会**点名失败**（不会偷偷发那个请求，也不会换一款字体顶替）；
   这时要告诉用户"这款字体第一次用需要联网一次"，由用户决定，不要自己去掉 `--offline` 重试。
 
@@ -91,10 +97,10 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
 | `--bg-mode white\|dark\|auto` ＋ `--trim-bg` | **用户说「去除背景色」时指的是这一类**（本机等价物＝`--bg-mode auto`，白族背景用 `white`），不是 `--transparent-bg`：前者把背景格从量化上游整块拿掉（那些格连豆都不算），后者只是"纯白格不绘出、但仍进材料清单"。背景是**深色**（夜景、深底唐卡）时 `--transparent-bg` 管不了它：黑豆会占满整片。用 `--bg-mode dark`（或拿不准就 `auto`）做**边界连通**抠图——只吃连到画框边缘的同族格，主体的深色**描边不会被抠掉**；再加 `--trim-bg` 把背景带整条裁掉（那些格不用买豆） |
 | `--dither` / `--dither-strength` | 只在用户要**照片质感**时打开（`floyd_steinberg`）。⚠ 它不是降色号的手段：实测打开后色号反而变多。强度旋钮默认受 `solidRegionProtection` 限制（平坦区被归零），要按强度可观测地变化请用 `bayer` |
 | ⚠ 细线与小面积点缀 | 想让图更省色号时用 `--target-colors` 按预算收。用户加大合并零散色号的阈值时，不要推荐加大 `--width`，更不要自行加大——宽度只在用户明确提出时才改，你只能给建议：竹竿、高光、腮红、描边占比低但语义重要，用阈值合并会直接把它们吃掉；预算合并至少让你能说清"N 色"换来了什么代价 |
-| ⚠ 深色主体必读 | 主体偏黑（熊猫、夜景、深色 logo、黑底像素画）时**不要**加 `--transparent-bg`。默认白色格子会绘出；一旦加了它，纯白格渲染成透明，在深色查看器上会与黑色豆子融为一体、整图不可辨认 |
+| ⚠ 深色主体必读 | 主体偏黑（熊猫、夜景、深色 logo、黑底像素画）时**不要**加 `--transparent-bg`。默认白色格子会绘出；一旦加了它，纯白格渲染成透明，在深色查看器上会与黑色豆子融为一体、整图不可辨认。10-30 起本包出图时也会**当场说一句** ⚠ 并给出路。**留空有两条通道，两条都触发这句**：`--transparent-bg`（白格不绘）与 `--bg-mode`（背景格被抠走，那些格连豆都不算）。实测夹具（40 格宽）：深色主体＝留空 60.3%／绘出的豆 93.4% 是暗族 ⇒ 说；同几何的彩色主体＝留空 61.6%／暗族 0 颗 ⇒ 不说（不误报） |
 | `--mirror` | 用户会**熨烫翻面**（默认会）时加上，否则成品左右反 |
-| `--format pdf` | 用户要打印时输出 PDF |
-| `--quiet` | 日志多时加它：关掉 `[Pipeline]` 等算法诊断日志 |
+| `--format`（只有 png） | 交付出口只剩 PNG。10-30 用户逐字「去掉 pdf 导出，只导出 png 文件」＋「一起去掉，只留 PNG」⇒ `--format pdf`／`svg` 两档给了就**整次拒绝、一个文件都不写**，并点名"本包只写 PNG"；**别把 png 改名成 .pdf/.svg 冒充**（那是交出一个假扩展名） |
+| `--quiet` | 关掉 `[Pipeline]` 等算法诊断日志（10-30 起**默认就是关的**，这条是显式再压一遍；`-v/--verbose` 才打得开） |
 
 图片类型（默认推荐 `miniapp_fast`，其余仅供多版本效果对照时选）：
 
@@ -121,10 +127,12 @@ npx -y -p @javascribe/pindoupic@latest pindoupic \
   --colors --output <输出路径.png>
 ```
 
-- 输出 PNG 默认包含色号标注、网格、行列编号和材料清单；**顶部带产品 logo、底部带一行官网文案**（有意的增长设计，没有关闭开关；要去掉请取得商业授权，见包内 `COMMERCIAL-LICENSE.md`）。
+- 输出 PNG 默认包含色号标注、网格、行列编号和材料清单；**顶部带产品 logo**（有意的品牌露出，没有关闭开关；要去掉请取得商业授权，见包内 `COMMERCIAL-LICENSE.md`）。图纸底部**不印**“访问官网”那类引导文案（10-31 用户逐字撤走），也别在图上自行加一行。
 - `--colors` 让 stdout 打印各色号用量统计（务必转述给用户）。
-- 其他参数：`--no-grid` `--no-color-codes` `--no-materials` `--no-rulers` `--transparent-bg`（纯白格不绘出）`--cell-size`；`--agent "<宿主名>"` 标注是谁在调用（写进匿名用量记录）。
-- 联网开关（用户明确要求"什么都别往外发"时再用）：`--offline`——本站的配置／用量／反馈三条通道一条请求都不发（渲染参数改用包内默认值；图片来源是 URL 时那一次下载属于你自己的输入，不在其列，会另说一句 ⚠）；`--no-telemetry`——不记录也不补报使用量。二者等价的环境变量：`PINDOUPIC_OFFLINE=1` / `PINDOUPIC_TELEMETRY=0` / `PINDOUPIC_QUIET=1`。
+- 其他参数：`--no-grid` `--no-color-codes` `--no-materials` `--no-rulers` `--transparent-bg`（纯白格**留空不绘**；注意这是**非默认**，默认是绘出，要它得显式加）`--cell-size`；`--agent "<宿主名>"` 标注是谁在调用（写进匿名用量记录）。
+- **输出语言默认就是中文**（10-30 用户裁定改判）：什么都不用设；这台机器的 `LC_ALL`／`LANG`／`Intl` 信号**不再参与判定**——它们量的是机器的语言，不是用户的语言（旧版实测：宿主里 `LANG` 为空而 `Intl` 报 en-US ⇒ 中文会话拿到整套英文）。要整套英文输出才带 `PINDOUPIC_LANG=en`（MCP 形态写在 server 的 spawn env 里）。这条覆盖只影响**读数语言**，不影响图纸、统计与产物；它同样决定安装时装的是哪一份说明书（中文份／英文份，见安装那一步）。
+- 算法逐阶段诊断日志（`[Pipeline]` 那几十行）**默认不打**（10-30 起，用户原话「诊断日志应该默认走 stderr 或 debug 旗标」；通道本来就在 stderr，改的是默认量）：要排障才加 `-v/--verbose`（MCP 侧只有 `PINDOUPIC_DEBUG=1` 这一条开关）。默认那档 stderr 只剩交付读数——生成中・已保存（行列/豆数/色数/耗时）・长尾代价・白底占比・参数来源。
+- 联网开关（用户明确要求"什么都别往外发"时再用）：`--offline`——本站的配置／用量／反馈三条通道一条请求都不发（渲染参数改用包内默认值；图片来源是 URL 时那一次下载属于你自己的输入，不在其列，会另说一句 ⚠）；`--no-telemetry`——不记录也不补报使用量。等价的环境变量：`PINDOUPIC_OFFLINE=1` / `PINDOUPIC_TELEMETRY=0`；另有 `PINDOUPIC_LANG=zh|en`（输出语言，见上）与 `PINDOUPIC_DEBUG=1`（把算法诊断日志要回来）。
 
 ## 第 3.2 步：同时留一份「网格文档」（推荐，几乎零成本）
 
@@ -219,13 +227,13 @@ MCP 免去复制目录、天然绕开安装路径问题，工具面与 CLI 对�
   ⚠ MCP **没有 stderr**，这些意图的逐条明细与"阈值已被预算覆盖"这类读数只出现在响应的 `advisories` 字段里——
   拿到响应必须把相关几句转达给用户，不要自己改写成"已优化"。
 - 响应里的 `param_source`（`server` / `builtin` / `offline`）说明这次生效参数来自站点下发还是包内默认——
-  排查"同一版本同一张图为什么某天结果变了"先看它（CLI 侧对应 stderr 那行 `⚙ 渲染参数生效值来源`）。
+  排查"同一版本同一张图为什么某天结果变了"先看它（CLI 侧对应 stderr 那行 `⚙ 每格 N 像素｜参数来源：…`）。
 - 想零请求：优先直接传本次调用级参数 `offline: true`（或 `no_telemetry: true`）——MCP 是常驻进程，
   这两个参数**只影响这一次调用**，不会把后面的调用一起锁死；在宿主配置里加 `"env": { "PINDOUPIC_OFFLINE": "1" }` 则对整个进程生效。
 - 不认识的开关/入参 ⇒ **整次拒绝**（10-14 起，不再是"警告后继续"）：CLI 退出码非 0 且不写任何文件，MCP 回 `isError`。
   回执会逐个点名哪个名字不存在、最接近的是哪一个（最常见的三种错法：把 MCP 的入参名照抄进 CLI（`preview_path` ⇒ 最接近的是 `--preview`）、
-  少写或多写字母（`colours` ⇒ `--colors`）、把限定词放前面（`grid_anchor` ⇒ `--anchor`）），并说明不给它就没有哪份交付物。
-  **照抄对面出口的写法最容易撞上这条**：CLI 用 `--preview`/`--anchor`，MCP 用 `preview_path`/`grid_anchor`。
+  少写或多写字母（`colours` ⇒ `--colors`）、把限定词放前面（`image_base64` ⇒ `--image-base64`）），并说明不给它就没有哪份交付物。
+  **照抄对面出口的写法最容易撞上这条**：CLI 用 `--preview`/`--emit-pattern`，MCP 用 `preview_path`/`export_grid_path`。
   布尔参数发成字符串（例：`show_grid: "false"`）仍按默认值执行并写进 warnings，不会猜你的本意。
   **唯一例外**：下划线开头的键（`_meta` 这类协议保留位）不拒绝——有些宿主会把它塞进入参里，
   拒绝它等于在这类宿主上每次调用都失败；这类键照常忽略但会写进 warnings，不会静默吞。
@@ -235,7 +243,7 @@ MCP 免去复制目录、天然绕开安装路径问题，工具面与 CLI 对�
 | 什么时候用 | 用什么 | 拿回来什么 |
 |---|---|---|
 | 图纸大到一块豆板装不下、要多人/多板一起拼 | CLI `--board-tiling 16`（MCP `board_tiling`） | 每板一张**带板号**的图 + `boards.json`（板号→行列范围，1 起、含边界）。**先读 boards.json 再讲板**，不要让用户对着图数；块数一定等于 ceil(宽/16)×ceil(高/16) |
-| 用户要自己打印或导进矢量工具 | CLI `--format svg`（MCP `format: "svg"`） | 与位图**同源**的那张 SVG（格数与 p.json 一致，实测对拍） |
+| 用户要打印，或想要 PDF／矢量文件 | 那张 PNG（本包唯一的交付出口） | PDF／SVG 两档 10-30 已去掉：`--format pdf`／`svg`（MCP 的 `format`）给了会**整次拒绝、一个文件都不写**，并点名"本包只写 PNG"。要打印就把那张 PNG 直接打到 A4 上照着拼；本包不提供 PDF／矢量导出，也不许把 png 改名冒充 |
 | 用户按清单买豆 | CLI `--shopping-list list.csv`（MCP `shopping_list_path`） | 色号/名称/HEX/颗数/建议瓶数/备注；颗数合计与网格实算互印，**纯白那行按本次是否绘白底写不同备注**（不说清用户会多买一整包） |
 > ⚠ 这三件在 **`pattern render`（重画）时同样可给**：改完格子（`pattern set`）不必回头重跑生成就能拿到新清单与新分板；出图与重画、CLI 与 MCP 四处共用一份实现，同一份 p.json 两次产物逐字节相同。
 
@@ -279,7 +287,7 @@ npx -y -p @javascribe/pindoupic@latest pindoupic feedback --rating 4 --note "<�
 
 ⇒ 要省钱就停在 **17 色那一档**（平均色差只多 0.5，肉眼看不出）；
 **不要把 `--simplify-threshold` 拧过 0.005**——过了就进入可见偏色区，且色号数会断崖式塌掉。
-生成后若 stderr 出现 `ℹ …个色号里有 N 个 ≤10 颗…`，**把这句原样转达用户并问一句**："这张图有 N 个色号只用 1–10 颗豆（每多一色≈多买一包），要不要合并零散色号重生成一次？"
+生成后若响应里的 `advisories` 出现这句（CLI 侧同一句走 stderr，MCP 出口没有 stderr）：`ℹ …个色号里有 N 个 ≤10 颗…`，**把这句原样转达用户并问一句**："这张图有 N 个色号只用 1–10 颗豆（每多一色≈多买一包），要不要合并零散色号重生成一次？"
 - 用户同意才加 `--simplify-colors`（要更激进再配 `--simplify-threshold`，值越大合并越多）。
 - 用户加大 `--simplify-threshold` 时，**不要推荐加大 `--width`，更不要自行改宽度**——宽度只按用户明确提出的要求改，你只能给建议。
 - **不要**默认替用户开：合并阈值"默认不开启"是产品拍板；也不要替用户判断"这图太花了"。
@@ -295,14 +303,19 @@ npx -y -p @javascribe/pindoupic@latest pindoupic feedback --rating 4 --note "<�
 |---|---|---|
 | 「白底**会整片绘出并计入材料清单**」 | 白底会画（**两出口默认都是这态**） | 若这块是背景，这些白豆是纯浪费；让它不绘出：CLI 加 `--transparent-bg`、MCP 传 `transparent_bg: true`——正常情况下你会看到这句 |
 | 「这些格子**图纸上不绘出**，但仍列在材料清单里」 | 白底不画（调用方显式要的那态） | 白豆可按需少买或先不买；要连白底一起画出来：CLI 去掉 `--transparent-bg`、MCP 传回 `transparent_bg: false`（两边默认就是绘出，所以正常情况下你不会看到这句） |
-| 「主色 …（#FDD3CC）占 N% 且会绘出」 | 背景不是纯白，引擎认不出 | 建议先裁掉背景再重跑，或在网页端用「去除背景色」 |
+| 「主色 …（#FDD3CC）占 N% 且会绘出」 | 背景不是纯白、本次也没抠图 ⇒ 引擎认不出这块是背景 | 建议先裁掉背景再重跑，或在网页端用「去除背景色」 |
+| 「本次 --bg-mode 已按四角参照色…抠除背景格 N/M…用 --trim-bg 裁掉」 | 背景**已经被抠过**（这一发别再说"只把纯白当透明、请先裁背景"，那是矛盾） | 想连四周残留的背景带一起去掉：CLI 加 `--trim-bg`（要与 `--bg-mode` 同给）、MCP 传 `trim_bg: true` |
+| 「这张图会被绘成**一颗豆都不画**的图纸：N 格全部留空」 | 整张都是留空格（白底＋不绘白，或全透明图） | 先让用户确认原图是不是整张白底／全透明——这张不能拿去备料；要连白底一起绘出：CLI 去掉 `--transparent-bg`、MCP 传回 `transparent_bg: false` |
 
 三种情形都不要替用户改图、也不要替用户改开关——把选择说出来，等他答。
 
 ## 排错
 
 - `npx` 下载包失败 → 用户网络问题，提示重试或挂代理；不要降级自造算法。
-- sharp 安装失败 → 同上。
+- 报「这张图读不了（这是 GIF／本包只解 PNG 与 JPEG）」→ **不是安装问题**：10-31 起本包不带任何原生图像库，
+  能读的输入就是 **PNG 与 JPEG** 两类。iPhone 的 HEIC、GIF、WebP、TIFF 会整次拒绝、一个文件都不写，
+  并给两条出路（手机上另存/导出成 JPG 或 PNG／或走网页端上传，那边支持的格式更多）。按那句转达给用户即可，
+  **不要**自己拿别的东西先转一道码再喂进来，也不要因此改用别的工具或自造算法。
 - 访问不到 pindoupic.com → **照常出图**（自动改用包内默认渲染参数，输出里会写明参数生效来源）。不要中止任务，也不要自造算法或改用别家。
 - 报 `色板 X/Y 不在本包内` → 错误信息里已列出该版本支持的色板清单，按清单换型号。
 - 型号必须逐字写数字（`291`，不要写 `291 色`/`291色`）；品牌大小写无所谓（实测 `mard/291` 与 `MARD/291` 都行）。

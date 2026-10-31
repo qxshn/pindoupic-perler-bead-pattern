@@ -1,7 +1,7 @@
 # pindoupic 拼豆图纸 Agent Skill
 
 让 AI Agent（Claude Code、Qoder、Cursor 等支持 Agent Skills 的宿主）直接把图片生成拼豆图纸：
-带色号/网格/材料清单的 PNG 或 PDF + 各色用量统计。
+带色号/网格/材料清单的 PNG + 各色用量统计。
 
 - 网站：https://www.pindoupic.com
 - 生成引擎：npm 包 `@javascribe/pindoupic`（与网页版同一套算法的 Node CLI），Skill 首次运行时经 `npx` 自动下载

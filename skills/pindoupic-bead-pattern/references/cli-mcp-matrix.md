@@ -42,12 +42,11 @@
 | **背景策略** | `--bg-mode`（none 或 white 或 dark 或 auto） | `bg_mode` | `none`＝现状一字不动 | 一致；**边界连通**抠图（从四条边扩、生长容差 ΔE2000≤2），与边缘连通无关的同色描边不会被抠掉——全局阈值实现会（`check:color-intervene` BG2 用孤立暗格夹具区分两种实现）。auto 归族后深底/白底给不同的那句 |
 | **裁掉背景带** | `--trim-bg` | `trim_bg` | 关 | 一致；必须与 `--bg-mode` 同时给，单独给时两边都点名"一格未裁"（不静默无事发生）。裁完 canvas 收缩到内容包围盒，读数给出前后格数 |
 | **按库存出图** | `--palette-file <path>` | `palette_file` | 不传＝用内置套装 | 一致；与 `--palette` / `palette_brand`+`palette_sub` **互斥**（两个真值源直接报错，不玩"后者覆盖前者"）。非法文件点名第几条（空 colors／重复色号带两条各自 hex／hex 不是 `#RRGGBB`），不回退内置。文档 `palette` 记成文件里的 brand/型号 |
-| 输出格式 svg | `--format svg` | `format: "svg"` | 默认 png | 一致；**两个出口用的是同一份 SVG 字符串**（位图本就是它栅格化的），实测同参 SVG 与 PNG 声明尺寸一致、两出口文件逐字节相同 |
+| 输出格式 | `--format png` | `format: "png"` | 默认 png | 一致；**交付出口只有 PNG**（10-30 用户逐字「去掉 pdf 导出，只导出 png 文件」＋「一起去掉，只留 PNG」）：`--format pdf`／`svg` 两档现在**整次拒绝、一个文件都不写**，两个出口同口径点名"本包只写 PNG"，不存在"写一个假扩展名"的降级 |
 | 采购清单 | `--shopping-list <path>` | `shopping_list_path` | 不传＝不写 | 一致（09-30 M5-2，同一份 `shoppingListCsv()`）；颗数合计与网格实算豆数互印，纯白那行按生效的 transparentBg 分型；名称里的逗号/引号转义、以 = 开头的值降级成文本 |
 | 按豆板分块 | `--board-tiling <n>` | `board_tiling` | 不传＝不分板 | 一致（09-30 M5-1）；块数 == ceil(宽/n)×ceil(高/n)，各板拼回与原图逐格一致；产物是 boards.json（板号→1 起含边界的行列范围）＋每板一张带板号的图 |
 | 分板产物目录 | `--boards-dir <dir>` | `boards_dir` | 与网格文档/输出同目录 | 一致；非法 n（0 或非数字）CLI 直接拒绝出图并点名，MCP 回 warnings（一个请求了分板却什么板都没给的静默交付比报错更糟） |
 | 豆子形状 | `--bead-shape` | `bead_shape` | `square` | 一致 |
-| 输出格式 | `--format` | `format` | `png`；无 `sips` 的宿主降级为 PNG 并出读数 | 一致 |
 | 输出路径 | `--output` / `-o` | `output_path` | CLI 由输入名派生（base64 入口派生成 `pattern_bead.png`）；MCP 落临时目录并回 `png_file`；两者都建父目录 | 一致（09-29 补齐 CLI） |
 | 白底是否绘出 | `--transparent-bg`＝纯白格**不**绘出 | `transparent_bg: true`＝纯白格**不**绘出 | 两出口默认都**绘出纯白格** | 一致（10-02 用户裁定两边一起翻成绘出；MCP 的 `transparent_bg` 默认 false。旧 CLI 旗标 `--keep-bg` 仍在，但等于默认值并会出一句点名读数） |
 | 旧旗标（等于默认） | `--keep-bg`＝白色格子绘出＝**本次默认值**：生成时给不给产物相同，只出一句点名读数 | 无对应入参（MCP 侧不传即默认） | 不传 | 一致（10-02 默认翻转后它在**生成路径**上退化成"显式声明默认"）。⚠ 一条例外要说清：`pattern render` 重画一份记着「不绘出」的旧文档时，它会覆盖文档里那一项 ⇒ 产物会变，同批会打一句点名读数（10-02 审查实测补上，此前这条路径既改图又沉默）。`check:cli-exhaustive` 用 via=name＋expectSame 钉住生成路径不许静默、也不许偷偷改图 |
@@ -55,7 +54,7 @@
 | 网格文档导出 | `--emit-pattern <path>` | `export_grid_path` | 关（不传就不写） | 一致（09-30 M1 同批加）；两边写的是**同一份实现**产出的同一结构（`core/patternFile.ts`），逐字节相同 |
 | 读单格 / 读区域 | `pattern get --cell 行,列` / `--region 行1,列1,行2,列2` | `get_pattern_grid` 的 `cell` / `region` | 坐标 **1 起** | 一致；坐标语义与图纸四周标尺同序（引擎标尺打的是 `r+1`/`c+1`），越界两边都点名报错而不裁剪 |
 | 从网格重画 | `pattern render <p.json>` | `render_pattern` | 未显式给的开关沿用文档 `render` 块 | 一致；**绝不重新量化**，实测原图与两条渲染路径 MD5 逐字节相同 |
-| 重画时出交付物 | `pattern render` 的 `--shopping-list` / `--board-tiling` / `--boards-dir` / `--format svg` | `render_pattern` 的 `shopping_list_path` / `board_tiling` / `boards_dir` / `format:"svg"` | 不传＝不写 | 一致（09-30 M5 遗留清理批）：四处共用 `emitDelivery()` 这一份实现，实测同一份 p.json 出图那次与重画那次的 CSV 与 boards.json **逐字节相同**（判据在 check:delivery-m5 的 R2/R3/R4） |
+| 重画时出交付物 | `pattern render` 的 `--shopping-list` / `--board-tiling` / `--boards-dir` | `render_pattern` 的 `shopping_list_path` / `board_tiling` / `boards_dir` | 不传＝不写 | 一致（09-30 M5 遗留清理批）：四处共用 `emitDelivery()` 这一份实现，实测同一份 p.json 出图那次与重画那次的 CSV 与 boards.json **逐字节相同**（判据在 check:delivery-m5 的 R2/R3/R4）；重画出口的 `--format`／`format` 与出图同口径——**只认 png，给 svg／pdf 整次拒绝** |
 | 不印色号文字 | `--no-color-codes` | `show_color_codes: false` | 印 | 一致（09-29 补齐 MCP）；形态相反：CLI 是否定旗标，MCP 是正向布尔、默认 true |
 | 不画网格线 | `--no-grid` | `show_grid: false` | 画 | 一致（同上） |
 | 不画四周标尺 | `--no-rulers` | `show_rulers: false` | 画 | 一致（同上） |
@@ -64,38 +63,36 @@
 | 内联 base64 返回 | —（不适用，CLI 只写文件） | `include_image` | 不内联 | ⚠ 仅 MCP（CLI 的载体是磁盘文件） |
 | 色号用量表 | `--colors`（stdout 表格） | 响应 `color_stats` | — | 同一数据，两种载体 |
 
-## 二′、文字转图纸参数（10-13 新增；`generate_bead_pattern` ↔ `pindoupic --text`）
+## 二′、文字转图纸（10-30 用户裁定：回到本包）
 
-> 这一族把「打字出图纸」接到 npm 出口：引擎、字体表、板面量程都从网页那份真值源现取
-> （`frontend/src/utils/textPatternGenerator.ts`、`frontend/src/utils/textFontLoader.ts`、`frontend/src/data/patternSize.ts`），
-> CLI 与 MCP 共用 `cli/src/core/textPattern.ts` **一份**实现，所以同参两出口的网格文档除 `pattern_id` 外逐字节相同。
+> 10-16 那批曾把整块撤下，**10-30 由用户裁定重新放回**：引擎、字体表与出图链都在 npm 产物里，
+> 与网页「文字转图纸」吃同一份算法实现。⇒ **`--text`／`text` 现在就是正常入口**，
+> 10-16 那套「老写法整次拒绝并回一句人话转介网页版」的行为**已经不存在了**，任何文档不得再按那个口径写。
+> 下面逐参数对拍：CLI 旗标名取自 `pindoupic --help` 现跑输出，MCP 入参名取自**活体 `tools/list`**，
+> 文字流两侧各 **17** 颗（生图入参现值 58 颗）。两臂唯一仍"两边都不做"的是 `sys`（系统黑体）——
+> 它靠操作系统自带字体，换台机器就换一个字形，同一串参数出不了同一张图。
 
 | 能力 | CLI | MCP | 默认值 | 差异 |
 |---|---|---|---|---|
-| 文字内容 | `--text <文字>` | `text` | 无默认（给了就进文字流） | 一致；**与三个图片入口互斥**，同时给会整次拒绝并点名（10-13 决-C＝乙） |
-| 字体 | `--font <key>` | `font` | `shuhei` | 一致。可选键与各自下限**从 `textFontLoader.ts` 的 `TEXT_FONTS` 现取**（两出口与 `--help` 三处同源，写死清单就是下一个漂移点）；`sys`（系统黑体）在 npm 出口不可用并点名原因 |
-| 自带字体文件 | `--font-file <path>` | `font_file` | 不给＝用内置那款 | 一致（同一份 `localFontFile()`）：给了它就走**零字体请求**那条路（不查内置表、不下载），文件解析不动就点名那份路径并整次拒绝，**绝不换成内置字体顶一张**；与 `--font`／`font` 同时给＝自带文件优先，但两出口都会点名被取代的那款内置字体（`advisories` 里那句「内置字体「seal」没有生效」）。字高下限按 16 格（内置轮廓档最宽松那档）——这是保守工程线，**不是对你这款字体的实测** |
-| 字体清单（纯查询） | `--list-fonts` | `list_fonts: true` | — | 一致（同一份 `listTextFonts()`）：key／名称／点阵还是轮廓／最低字高／篆书可写字数／本机有没有留档，**不出图、不发任何请求**（留档状态只 stat 本地目录），断网照样答；与 `--text`／三个图片入口混给会被拒（纯查询不猜意图） |
-| 预检（只跑判据不出图） | `--check-text` | `check_text: true` | — | 一致（**不是另写一份检查**，是同一条判据链跑完不渲染不落盘）：退出码 0／`success:true` 的语义是"这组参数能出图"，不是"图已经出了"；两出口都把出图那一发**会说的话**原样说一遍（同一个 `patternAdvisories`），并各说一句"预检模式没有写任何文件"。没给 text 单独给这一颗＝拒绝并指路，**不会**报成 "需要一张图片" |
-| 字高（格/字） | `--char-height <n>` | `char_height` | 24 | 一致。低于该字体下限会拒绝并说出下限；与网页 DEFAULT_UI 的 24 由 `check:npm-textflow` 的 D 族逐字对拍 |
-| 字距 | `--letter-gap <n>` | `letter_gap` | 7 | 一致 |
-| 行距 | `--line-gap <n>` | `line_gap` | 7 | 一致 |
-| 对齐 | `--align <side>`（left / center / right） | `align` | center | 一致 |
-| 描边种类 | `--stroke <kind>`（none / char / whole / cloud） | `stroke` | cloud | 一致 |
-| 描边宽度 | `--stroke-width <n>` | `stroke_width` | 1 | 一致（0-6 越界点名） |
-| 字面色号 | `--face-color <code>` | `face_color` | H2 | 一致；色号不在本色板内会点名并给出可用形如 A1/A2/A3（网页端静默兜到第一颗，npm 不兜） |
-| 描边色号 | `--stroke-color <code>` | `stroke_color` | R1 | 一致 |
-| 云朵三色 | `--cloud-color a,b,c` | `cloud_color` | F14,E12,E6 | 一致（顺序＝内环/中环/外环，不是三个独立开关） |
-| 底色 | `--bg-color <code>` 或 `--bg-color none` | `bg_color` | `none`＝透明底 | 一致；传 none 与不给同形（整张铺底与文字块描边是两件事） |
-| 板宽 | `--width` / `-w` | `width` | 不给＝按文字块自动贴合 | **两个量，且 200 的身份变了**：文字流不再设人为上限（10-14 用户裁定「取消上限，只给建议」），`patternSize.ts` 的 `TEXT_BOARD_MAX_WIDTH=200` 现在只是**常见底板尺寸＝建议档**，拦人的是每边 1700 格那根防死机红线（实测档）；图片流仍是 500（算法层天花板） |
-| 板高 | `--board-height <n>` | `board_height` | 不给＝自动贴合 | 一致（MCP 用 board_height 之名，免与图片流「高度按原图比例推导」混成一件事）；上限口径同上一行（10-14 起不设人为格数上限，红线每边 1700） |
-| 锚点 | `--anchor <行,列>` | `grid_anchor` | 不给＝板内自动居中 | 一致；算式 `(W-bw)>>1` / `(H-bh)>>1` 与 iOS `pdGenerateText`、H5 `useTextPattern.ts` 同源 |
-
-实测依据（10-13，本机 `cli/dist`）：同一串文字参数分别从 CLI 与 MCP 喂进来，PNG **逐字节相同**、
-网格文档 `content_fingerprint` 相同、采购清单 CSV 相同；图片流在改动前后 PNG／CSV／分板 16 件逐字节相同
-（`p.json` 只有 `pattern_id` 变，那是每次运行的身份）。
-⚠ 文字流的字体文件第一次用时从站点取一次（带 `--offline` 且未留档 ⇒ 点名失败），这是本包**唯一**一处
-「断网做不到」的入口，由用户 10-13 决-B＝丙 拍定，不是实现上的偷懒；取到后存 `~/.pindoupic/fonts`，之后离线可用。
+| 文字输入（给了就进文字流） | `--text <文字>` | `text` | 不给＝走图片流 | 一致；与 `--image`／`--image-url`／`--image-base64`（`image_path`／`image_url`／`image_base64`）**互斥**——同给 ⇒ CLI 退出码非 0 且**一个文件都不写**、MCP 回 `isError` 且不落 `png_file`，回执点名互斥的是哪两条通道。支持在参数里直接换行。走**二值直出**引擎（与网页同一份实现），不经过图片量化 ⇒ 下一行点名的那族开关带着会被整次拒绝并点名 |
+| 文字流不适用的图片流开关 | `--type`／`--dither`／`--simplify-colors`／`--simplify-threshold`／`--target-colors`／`--bg-mode`／`--mirror`／`--report`／`--compare` | `image_type`／`dither`／`simplify_colors`／`simplify_threshold`／`target_colors`／`bg_mode`／`mirror`／`export_report_path`／`compare_path` | — | 一致；"哪些开关不适用"只有一份表（`cli/src/core/textFlags.ts`），两出口各自按本出口的写法注入旋钮名 ⇒ 撞进来就**整次拒绝并逐条点名**，不是静默忽略，也不要替用户删掉参数重跑（那会产出一张他没要的东西）|
+| 字体 | `--font <key>` | `font` | `shuhei` | 一致；内置九款：`fus12`／`fus8`（点阵档）、`shuhei`／`pu85`／`huangyou`／`kuaile`／`noto400`／`wenkai`／`seal`（轮廓档）。`seal`＝崇羲篆體（印章），**限定字库**：可写字 2727 个（由字体 cmap 现算，不是抄来的数），表外字**逐字点名拒绝** |
+| 自带字体文件 | `--font-file <path>` | `font_file` | 不传＝用内置字体 | 一致；给了它＝**零字体请求**（不查内置字体表、不下载任何字体文件）；解析不动就点名那份文件并**整次拒绝**，绝不换成内置字体顶一张。与 `--font` 同给时自带文件优先，读数点名被取代的那款。⚠ 字高下限按 16 格处理（＝内置轮廓档里最宽松那档）——这是保守工程线，**不是对你这款字体的实测** |
+| 字高 | `--char-height <n>` | `char_height` | 24（格/字） | 一致；低于该字体下限会被拒绝并说出下限是多少（点阵 8／12；数黑 16；普惠/黄油/快乐/思源 24；篆书 28；文楷 32） |
+| 字距 | `--letter-gap <n>` | `letter_gap` | 7（格） | 一致 |
+| 行距 | `--line-gap <n>` | `line_gap` | 7（格） | 一致 |
+| 多行对齐 | `--align left 或 center 或 right` | `align` | `center` | 一致 |
+| 描边种类 | `--stroke none 或 char 或 whole 或 cloud` | `stroke` | `cloud` | 一致 |
+| 描边宽度 | `--stroke-width <n>` | `stroke_width` | 1（区间 0–6） | 一致 |
+| 字面色号 | `--face-color <code>` | `face_color` | `H2` | 一致；必须在本色板内，查无则点名并给出可用形如 A1/A2/A3，不"就近换一个" |
+| 描边/勾边色号 | `--stroke-color <code>` | `stroke_color` | `R1` | 一致 |
+| 云朵三色 | `--cloud-color A,B,C` | `cloud_color` | `F14,E12,E6` | 一致；顺序＝内环/中环/外环，一段逗号分隔 |
+| 整张底色 | `--bg-color <code 或 none>` | `bg_color` | `none`＝透明底不放豆 | 一致；它是**整张铺底**，与文字块自己的描边是两件事 |
+| 板高 | `--board-height <n>` | `board_height` | 不传＝按文字块自动贴合（四周各留 8 格） | 一致；**不设人为格数上限**：200 只是常见底板尺寸（超过只给一句建议），真拦人的是每边 1700 格那根防死机红线（实测 1700×1700 还能出图，再大一档渲染库拒收位图）——10-14 用户裁定 |
+| 文字块锚点 | `--anchor <行,列>` | `grid_anchor` | 不传＝板内自动居中 | 一致；与网页/iOS 同一条算式。放不下时整块**夹回板内**，MCP 的实际落点在响应 `text_flow.anchor.effective`，被夹过时 `clamped=true` |
+| 预检（只判不落盘） | `--check-text` | `check_text: true` | 关 | 一致；把出图那一发的判据**原样全跑一遍**（空文本／未知字体／字高下限／缺字逐字点名／色号不在本板／板面放不下／锚点夹回），但**一个文件都不写**。退出码 0／`success:true` 的含义只是"这组参数能出图"，**不是**"图已经出了"。非布尔值一律拒绝执行，不替你猜 |
+| 字体清单（纯查询） | `--list-fonts` | `list_fonts: true` | 关 | 一致；答 key／名称／点阵还是轮廓／最低字高／篆书可写字数／本机有没有留档，**不出图、一个请求都不发**，断网照样答。与 `--text` 及三个图片入口互斥；别为了"看看有没有这款字体"白烧一次生成 |
+| 字体文件的一次联网 | 第一次用某款**内置**字体时从 pindoupic.com 取一次，存进 `~/.pindoupic/fonts` 此后离线可用 | 同左 | — | 一致；带 `--offline`／`offline:true` 且本地没留档 ⇒ **点名失败**，不偷偷发那个请求、也不换一款字体顶替（这时要问用户，不要自己去掉离线开关重试）。给了 `--font-file`／`font_file` 就没有这一次联网 |
 
 ## 二、联网与反馈
 
@@ -105,7 +102,7 @@
 | 完全离线 | `--offline` | `offline: true` | 一致（09-29 补齐 MCP）。语义＝**本站的配置/用量/反馈端点一个请求都不发**，渲染参数用包内默认值；用量仍记进本地队列，下次联网补报。⚠ 唯一保留的机制差异：CLI 是进程级（一条命令一个进程），MCP 是**本次调用级**（常驻进程不能设全局，否则一次 `offline:true` 会把之后所有调用永久锁在包内默认值上） |
 | 不发送用量 | `--no-telemetry` | `no_telemetry: true` | 一致（09-29 补齐 MCP）；连本地待补报队列都不写 |
 | 标注调用宿主 | `--agent <名>` | `agent`（生图入参） | 不传：CLI 记空、MCP 记 `mcp-host` | 一致（09-29 补齐 MCP；此前 MCP 侧永远是 `mcp-host`，多宿主共用一个包时分不清谁在调） |
-| 生效参数来源 | stderr 的 `⚙ 渲染参数生效值来源` | 响应字段 `param_source`（`server`/`builtin`/`offline`） | — | 一致（09-29 补齐 MCP）：同版本同输入要能解释"为什么某天结果变了"，两个出口都得说清参数是谁给的 |
+| 生效参数来源 | stderr 那行 `⚙ 每格 N 像素｜参数来源：…` | 响应字段 `param_source`（`server`/`builtin`/`offline`） | — | 一致（09-29 补齐 MCP）：同版本同输入要能解释"为什么某天结果变了"，两个出口都得说清参数是谁给的 |
 | 每次出图后的"征集意见" | 打 `💬 …` ＋ `FEEDBACK_REQUEST` | 响应字段 `feedback_request` | 默认都发 | 一致：`--offline`/`offline:true` 或 `--no-telemetry`/`no_telemetry:true` 时**两出口都不再发这条要求外发的指令**（09-29 补齐 MCP；旧行为是 CLI 抑制、MCP 照发） |
 | 离线时提交意见 | `feedback --offline` | `submit_feedback{offline}` | 布尔；非布尔**拒绝执行** | 一致（09-29 进程级 `PINDOUPIC_OFFLINE`；**09-30 消费侧批补上调用级 `offline`**）：离线状态下反馈通道**在发之前就拒绝**并回一句人话（拦在唯一实现 `cli/src/core/feedback.ts` 里，两出口同语义）。旧形态是 MCP 只读进程级 ⇒ 在 `generate` 里用过 `offline:true` 的宿主把同一习惯带过来会**静默外发** |
 | 环境变量（两出口通用） | `PINDOUPIC_OFFLINE=1`、`PINDOUPIC_TELEMETRY=0`、`PINDOUPIC_QUIET=1`、`PINDOUPIC_API=<url>` | 同左 | 注意关闭用量的是 `PINDOUPIC_TELEMETRY=0`，**不是** `PINDOUPIC_NO_TELEMETRY` |
@@ -171,3 +168,13 @@ MCP 进程不能自己配置宿主自己，所以这一族旗标**只有 CLI 有
 | 只问"我该复制哪一条" | `--print-command` | — | 关 | CLI 专属；一个字节都不写 |
 | 逐组合枚举命令（给门禁打靶用） | `--all-combos` | — | 关 | CLI 专属；配 `--print-command` 用，去重必须=1 |
 | 上下文参数（只为证明命令不随它变） | `--os` 与 `--shell` | — | 不影响输出 | CLI 专属；`--os` 取 darwin、win32、linux 三值，`--shell` 取 bash、zsh、powershell、cmd 四值。`oneCommand(_ctx)` 故意接收却不使用，G1 与 M1/M10 各打一种分叉形态 |
+
+## 上传图纸到画廊（10-25 需求 10-21 决-6=乙 新增）
+
+| 能力 | CLI | MCP | 默认值 | 差异 |
+|---|---|---|---|---|
+| 上传网格文档到拼豆Pic 图纸画廊 | —（CLI 不上传；通道是 MCP 工具） | `upload_pattern` 工具的 `pattern_path` | — | ⚠ 仅 MCP。只上传能还原图纸的格子（sym/runs），**从不上传任何图片** |
+| 接入密钥 | — | `api_key`（或环境变量 `PINDOUPIC_GALLERY_KEY`） | 没密钥＝本地拒绝、一个请求都不发 | 密钥先经 `POST /api/v1/gallery/agent/apply-key` 申请（落 pending），由拼豆Pic 管理后台启用后才可传 |
+| 画廊文案位 | — | `title` + `tags` + `description` + `author` | 全可空（空文字＝进人工队列） | 搜索按 标签＋标题＋描述 模糊匹配（决-8=乙）；描述 ≤500 字、标签 ≤10 个 |
+| 调用方标识 | — | `device_id` | 缺省用文档 pattern_id | 只用于每日限条读数与后台「谁在刷」台账，不在画廊展示 |
+| 每日件数 | — | 同 `upload_pattern` | 每把密钥默认 20 条/日（后台可改） | 超额整次 429 拒收、不入库、不占件数；结构校验或文本安检不过＝400 当场拒收，同样不占件数 |
