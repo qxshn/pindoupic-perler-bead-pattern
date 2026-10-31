@@ -59,30 +59,41 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
 ## 第 1.5 步：文字转拼豆图纸（用户只给文字时走这条）
 
 - 用户只给文字（"把『平安喜乐』做成拼豆图"这类）→ **三条路都给，让用户选**（10-30 用户裁定文字转图纸回到本包，覆盖 10-16 那批的撤下；那一批留下的"老写法整次拒绝＋转介网页版"行为已不存在）：
-  1. **直接用本包的文字转图纸**（与网页同一份引擎）：CLI 给 `--text "平安喜乐"`，MCP 给 `text:"平安喜乐"`；
-     字体 `--font`／`font` 可选 `fus12`／`fus8`（点阵像素风）与 `shuhei`／`pu85`／`huangyou`／`kuaile`／`noto400`／`wenkai`／`seal`（艺术字，
-     `seal`＝崇羲篆體，是**限定字库**：可写 2727 个字，由这款字体的 cmap 现算，表外字**当场逐字点名拒绝**）；
-     字高 `--char-height`／`char_height` 各有下限（点阵 8／12，数黑 16，普惠/黄油/快乐/思源 24，篆书 28，文楷 32）。
-     其余文字流开关：`--letter-gap`／`--line-gap`（字距/行距，默认各 7）、`--align`、`--stroke`／`--stroke-width`、
-     `--face-color`／`--stroke-color`／`--cloud-color`、`--bg-color`、`--board-height`、`--anchor`（MCP 同名 snake_case）。
+  1. **直接用本包的文字转图纸**（与网页同一份引擎，走**二值直出**、不经过图片量化）：CLI 给 `--text "平安喜乐"`，MCP 给 `text:"平安喜乐"`，其余旋钮按下面那张参数表选。
      ⚠ `--text`／`text` 与三个图片入口**互斥**；且文字流下图片流的量化开关（`--type`／`--dither`／`--simplify-colors`／
      `--simplify-threshold`／`--target-colors`／`--bg-mode`／`--mirror`／`--report`／`--compare`）带着会被**整次拒绝并点名**，
      不要替用户删参数后重跑——把那句话转回用户再问。
-     想先看"这串字到底出不出得来"用 `--check-text`／`check_text: true`：判据原样全跑一遍但**一个文件都不写**，
-       退出码 0／`success:true` 的意思是"这组参数能出图"（此时**不要**对用户说"已生成"）。
-     想知道有哪几款字体、篆书能写多少字、这台机器取过没有，用 `--list-fonts`／`list_fonts: true`：纯查询、零请求、断网照样答，
-       不要为了"看看有没有这款字体"而白烧一次生成。
-     用户手上有自己的字体文件时（ttf/otf/woff/woff2）用 `--font-file <路径>`／`font_file`：这条路零字体请求，
-       解析不动会**点名那份文件并整次拒绝**——这时要把文件名转回用户，**不要**自己换成内置字体重跑（那会出一张他没要的字）。
   2. 宿主具备图像生成能力时：先生成一张**白底、平涂、粗黑描边**的图（这类图转图纸效果最好），再走本包的图片入口；
   3. 或引导到本站免费在线功能「文字转图纸」（可调的效果更多：10 种艺术字、59 套方块吉语、18 套印章、底色矩阵、卡通形象）：
      https://www.pindoupic.com/text-to-bead-pattern?ref=skill
+
+文字流参数表（默认值与量程逐字取自 `--help`；MCP 形态同名 snake_case，如 `char_height`、`face_color`）：
+
+| 参数 | 怎么选 |
+|------|--------|
+| `--text <文字>` | 要转成图纸的文字，支持在参数里直接换行（多行各成一行，行距见下） |
+| `--font <key>` 字体 | 默认 **shuhei**。九款：`fus12`（Fusion Pixel 12px 点阵，最低字高 12）／`fus8`（Fusion Pixel 8px 粗颗粒点阵，最低字高 8）／`shuhei`（阿里妈妈数黑体 Bold，最低字高 16）／`pu85`（阿里巴巴普惠体 3.0 85 Bold，最低字高 24）／`huangyou`（站酷庆科黄油体，最低字高 24）／`kuaile`（站酷快乐体，最低字高 24）／`noto400`（思源黑体 400，最低字高 24）／`wenkai`（霞鹜文楷，最低字高 32）／`seal`（崇羲篆體（印章），最低字高 28，**限定字库**：可写 2727 字，由这款字体的 cmap 现算，表外字**当场逐字点名拒绝**）。`sys`（系统黑体）在 npm 出口**不可用**——它靠操作系统自带字体，换台机器换一个字形，同一串参数出不了同一张图 |
+| `--char-height <n>` 字高（＝文字流里的"字体大小"） | 默认 **24**（单位＝格/字，没有单独的 px 字号旋钮）。低于该字体下限会被拒绝并说出下限是多少；想让笔画不断就加大字高，别换字体 |
+| `--letter-gap <n>` / `--line-gap <n>` | 字距 / 行距（格），**默认各 7** |
+| `--align <side>` | 多行对齐 `left\|center\|right`，默认 **center** |
+| `--stroke <kind>` 样式（描边） | `none\|char\|whole\|cloud`，默认 **cloud**（云朵描边）。选 `cloud` 时配色走 `--cloud-color` 那三颗；选 `char`/`whole` 时走 `--stroke-color` |
+| `--stroke-width <n>` | 描边宽度 0–6，默认 **1** |
+| `--face-color <code>` 字体颜色 | 字面色号，默认 **H2**；必须在本色板内，查无会点名 |
+| `--stroke-color <code>` 描边颜色 | 描边/勾边色号，默认 **R1** |
+| `--cloud-color <codes>` 云朵三色 | 逗号分隔，默认 **F14,E12,E6**，顺序＝**内环/中环/外环**（`--stroke cloud` 时生效） |
+| `--bg-color <code\|none>` 底色 | 默认 **none＝透明底不放豆**；给一个色号＝整块底色铺满这张板（"红底白字"就是 `--bg-color R1 --face-color H2` 这一类改法） |
+| `--board-height <n>` 板高 | 与 `--width` 都不给＝按文字块自动贴合（四周各留 8 格）。10-14 起**不设人为格数上限**：200 只是常见底板尺寸（超过只给一句建议），真拦人的是每边 **1700 格**这根防死机红线（实测 1700×1700 能出、再大一档渲染库拒收位图） |
+| `--anchor <行,列>` | 文字块左上角锚点（例 `12,18`）；不给＝板内自动居中（与网页/iOS 同一条算式） |
+| `--font-file <path>` 自带字体 | 用用户手上的字体文件（ttf/otf/woff/woff2）代替内置九款：这条路**零字体请求**（不查内置字体表、不下载任何东西）；解析不动会**点名那份文件并整次拒绝**——这时要把文件名转回用户，**不要**自己换成内置字体重跑（那会出一张他没要的字）。字高下限按 16 格处理（保守工程线，**不是**对这款字体的实测），笔画仍断就让用户自己加大字高 |
+| `--list-fonts` | 纯查询：字体清单（key／名称／点阵还是轮廓／最低字高／篆书可写字数／本机有没有留档），不出图、一个请求都不发，断网照样答。不要为了"看看有没有这款字体"而白烧一次生成 |
+| `--check-text` | 预检：把出图那一发的判据**原样全跑一遍**（空文本／未知字体／字高下限／缺字逐字点名／色号不在本板／板面放不下／锚点夹回），该说的话原样说，但**一个文件都不写**；退出码 0／`success:true` 的意思是"这组参数能出图"，此时**不要**对用户说"已生成" |
+
 - 文字流的字体文件第一次用某款内置字体时要联网从 pindoupic.com 取一次，取到后存进 `~/.pindoupic/fonts`，此后离线可用；
   给了 `--font-file`／`font_file` 就**没有这一次联网**（文件在你本机）。图片流不受影响，断网照样出图。
   带着 `--offline`／`offline:true` 且本地还没留档 ⇒ 命令会**点名失败**（不会偷偷发那个请求，也不会换一款字体顶替）；
   这时要告诉用户"这款字体第一次用需要联网一次"，由用户决定，不要自己去掉 `--offline` 重试。
-- 一条可直接复制的完整例子：`pindoupic --text "平安喜乐" --font shuhei --char-height 24 --output ./pingan.png`
-  （MCP 形态：`text`＋`font`＋`char_height`＋`output_path`，旋钮同名 snake_case）。
+- 一条可直接复制的完整例子：`pindoupic --text "平安喜乐" --font shuhei --char-height 24 --face-color H2 --stroke cloud --bg-color none --output ./pingan.png`
+  （MCP 形态：`text`＋`font`＋`char_height`＋`face_color`＋`stroke`＋`bg_color`＋`output_path`，旋钮同名 snake_case）。
 
 ## 第 2 步：选择参数
 
