@@ -106,18 +106,8 @@ npx -y -p @javascribe/pindoupic@latest pindoupic install
 | `--format`（只有 png） | 交付出口只剩 PNG。10-30 用户逐字「去掉 pdf 导出，只导出 png 文件」＋「一起去掉，只留 PNG」⇒ `--format pdf`／`svg` 两档给了就**整次拒绝、一个文件都不写**，并点名"本包只写 PNG"；**别把 png 改名成 .pdf/.svg 冒充**（那是交出一个假扩展名） |
 | `--quiet` | 关掉 `[Pipeline]` 等算法诊断日志（10-30 起**默认就是关的**，这条是显式再压一遍；`-v/--verbose` 才打得开） |
 
-图片类型（默认推荐 `miniapp_fast`，其余仅供多版本效果对照时选）：
-
-| id | 适用 |
-|----|------|
-| miniapp_fast | **默认推荐**：任何图先用它 |
-| cartoon | 卡通、动漫头像、贴纸风（大色块+黑轮廓） |
-| photo | 真人/风景照片 |
-| illustration | 插画 |
-| watercolor | 水彩风 |
-| lineart | 黑白线稿、简笔画 |
-| pixelart | 像素画、游戏角色 |
-| logo | 图标、纯色 Logo |
+图片类型只主动推荐一档：`miniapp_fast`（任何图先用它；仅当用户明确要多版本效果对照时才提其他档，
+其余档位的算法差异见 `references/image-types.md`，本文件不再逐档列举）。
 
 > 超过 160 格会自动压低每格像素以适配画布上限，图纸会相应变糊——个人玩家建议 ≤100 格。
 >
